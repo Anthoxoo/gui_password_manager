@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::process;
+use std::sync::Mutex;
 
 #[derive(Serialize, Deserialize)]
 pub struct PasswordManager {
@@ -30,47 +30,56 @@ enum State {
     Unlocked,
 }
 
-pub fn launch_program() -> PasswordManager {
+fn launch_program() -> Option<PasswordManager> {
     let file_path = get_full_file_path("/.config/password-manager")
         .expect("Couldn't find the HOME env variable.");
 
-    if let Ok(mut existing_manager) = PasswordManager::load(file_path.clone()) {
-        // mut because open_manager takes a &mut self
+    let _ = create_folder(&file_path);
 
-        // let input_master = dialoguer::Password::new()
-        //     .with_prompt("Enter your master password ")
-        //     .interact()
-        //     .unwrap();
-
-        let input_master = String::from("TODO");
-        if let Err(e) = existing_manager.open_manager(input_master.clone()) {
-            eprintln!("Denied acces ! : {}", e);
-            process::exit(1);
-        }
-
-        existing_manager
+    if let Ok(existing_manager) = PasswordManager::load(file_path) {
+        Some(existing_manager)
     } else {
-        create_folder(&file_path).expect("Error creating config file.");
-        println!("Welcome on our password manager !");
+        None
+    }
+}
+#[tauri::command]
+fn is_first_launch(state: Mutex<Option<PasswordManager>>) -> bool {
+    let manager = state.lock().unwrap();
 
-        // let new_master = dialoguer::Password::new()
-        //     .with_prompt("Create a master password (you'll have to remember it !!)")
-        //     .interact()
-        //     .unwrap();
-        let new_master = String::from("TODO");
+    manager.is_none()
+}
 
-        let mut new_manager = PasswordManager::new(new_master.clone());
+#[tauri::command]
+fn create_first_password(
+    master_pass: String,
+    state: Mutex<Option<PasswordManager>>,
+) -> Result<(), String> {
+    let mut manager = state.lock().unwrap();
 
-        if let Err(e) = new_manager.save_config_file(file_path.clone()) {
-            eprintln!("Error while saving the file on the disk : {}", e);
-            process::exit(1);
-        }
+    let mut new_manager = PasswordManager::new(master_pass.clone());
 
-        new_manager
-            .open_manager(new_master.clone())
-            .expect("Error opening manager");
+    let file_path = get_full_file_path("/.config/password-manager")
+        .expect("Couldn't find the HOME env variable.");
+    new_manager
+        .save_config_file(file_path)
+        .map_err(|err| format!("Couldn't save the config file : {err}"))?;
+    new_manager.open_manager(master_pass).unwrap();
 
-        new_manager
+    *manager = Some(new_manager);
+
+    Ok(())
+}
+
+#[tauri::command]
+fn check_password(
+    master_pass: String,
+    state: tauri::State<'_, Mutex<PasswordManager>>,
+) -> Result<bool, String> {
+    let mut manager = state.lock().unwrap();
+
+    match manager.open_manager(master_pass) {
+        Ok(_) => Ok(true),
+        Err(e) => Err(e.to_string()),
     }
 }
 
@@ -239,8 +248,16 @@ fn decrypt_password(password: String, key: MagicCrypt256) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let manager = launch_program();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .manage(Mutex::new(manager))
+        .invoke_handler(tauri::generate_handler![
+            check_password,
+            is_first_launch,
+            create_first_password
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
