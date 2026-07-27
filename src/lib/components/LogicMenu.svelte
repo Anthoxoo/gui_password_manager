@@ -1,9 +1,40 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
+    import { onMount } from "svelte";
+    import { StateMenu } from "../typesMenu";
+    import LoadingMenu from "./LoadingMenu.svelte";
+    import SetupMenu from "./SetupMenu.svelte";
+    import LoginMenu from "./LoginMenu.svelte";
+    import VaultMenu from "./VaultMenu.svelte";
+
+    const viewMap = {
+            [StateMenu.Loading]: LoadingMenu,
+            [StateMenu.Setup]: SetupMenu,
+            [StateMenu.Login]: LoginMenu,
+            [StateMenu.Vault]: VaultMenu
+        };
+
+
+    let currentStateMenu = $state(StateMenu.Loading)
+    onMount(async () => {
+      try {
+        let isFirstRegister = await invoke("is_first_launch");
+
+        if (isFirstRegister) {
+          currentStateMenu = StateMenu.Setup
+        } else {
+          currentStateMenu = StateMenu.Login
+        }
+      } catch(err) {
+        console.error("Error connecting to rust:", err)
+      }
+    });
+    let ActiveComponent = $derived(viewMap[currentStateMenu]);
 
     function clearPassword() {
       inputPassword = "";
     }
+
     let isConnected = $state(false)
     function toggleConnected(event: Event) {
       event.preventDefault()
@@ -18,7 +49,7 @@
       seePassword = !seePassword;
     }
 </script>
-
+<ActiveComponent />
 <div class="flex flex-col items-center">
     {#if !isConnected}
         <form class="row" onsubmit="{toggleConnected}"> <!-- check if the password is correct before toggle connection state -->

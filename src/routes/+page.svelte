@@ -1,12 +1,12 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import LoginScreen from "$lib/components/LoginScreen.svelte";
+  import MenuLogic from "$lib/components/MenuLogic.svelte";
 </script>
 
 <main class="container">
     <h1>Hello and welcome on my future password manager!</h1>
 
-    <LoginScreen />
+    <MenuLogic />
 </main>
 
 <style>
