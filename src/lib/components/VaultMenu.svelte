@@ -1,6 +1,11 @@
 <script lang="ts">
 </script>
 
-<main class="container">
-    <h1>This is the vault menu</h1>
+<main>
+    <h2>Welcome back in your vault !</h2>
+    <p>Shows menu</p>
+    <form>
+        <button type="submit">Lock your vault</button>
+    </form>
+
 </main>

@@ -1,6 +1,6 @@
 <script lang="ts">
 </script>
 
-<main class="container">
+<main>
     <h1>This is the loading menu</h1>
 </main>
