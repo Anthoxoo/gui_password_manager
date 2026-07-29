@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import MenuLogic from "$lib/components/MenuLogic.svelte";
+  import MenuLogic from "$lib/components/LogicMenu.svelte";
 </script>
 
 <main class="container">

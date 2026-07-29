@@ -43,7 +43,7 @@ fn launch_program() -> Option<PasswordManager> {
     }
 }
 #[tauri::command]
-fn is_first_launch(state: Mutex<Option<PasswordManager>>) -> bool {
+fn is_first_launch(state: tauri::State<'_, Mutex<Option<PasswordManager>>>) -> bool {
     let manager = state.lock().unwrap();
 
     manager.is_none()
@@ -52,7 +52,7 @@ fn is_first_launch(state: Mutex<Option<PasswordManager>>) -> bool {
 #[tauri::command]
 fn create_first_password(
     master_pass: String,
-    state: Mutex<Option<PasswordManager>>,
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
 ) -> Result<(), String> {
     let mut manager = state.lock().unwrap();
 
@@ -73,13 +73,17 @@ fn create_first_password(
 #[tauri::command]
 fn check_password(
     master_pass: String,
-    state: tauri::State<'_, Mutex<PasswordManager>>,
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
 ) -> Result<bool, String> {
     let mut manager = state.lock().unwrap();
 
-    match manager.open_manager(master_pass) {
-        Ok(_) => Ok(true),
-        Err(e) => Err(e.to_string()),
+    if let Some(manager) = manager.as_mut() {
+        match manager.open_manager(master_pass) {
+            Ok(_) => Ok(true),
+            Err(e) => Err(e.to_string()),
+        }
+    } else {
+        Err("Manager not initialized yet.".to_string())
     }
 }
 

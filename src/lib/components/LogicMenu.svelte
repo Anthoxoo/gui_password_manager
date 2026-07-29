@@ -22,8 +22,10 @@
 
         if (isFirstRegister) {
           currentStateMenu = StateMenu.Setup
+          console.log("Setup")
         } else {
           currentStateMenu = StateMenu.Login
+          console.log("Login")
         }
       } catch(err) {
         console.error("Error connecting to rust:", err)
