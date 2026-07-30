@@ -1,19 +1,29 @@
 <script lang="ts">
+    import { invoke } from "@tauri-apps/api/core";
+    let { onSuccess } = $props();
 
     let inputPassword = $state("");
     let inputPasswordConfirmation = $state("");
     let isSamePassword = $state(false)
     let errorMessage = $state("")
 
-    function checkSamePassword(event: Event) {
-      event.preventDefault()
+    async function checkSamePassword(event: Event) {
+      event.preventDefault();
 
       if (inputPassword != inputPasswordConfirmation || inputPassword == "") { // inputedPassword = "" so the user cant input a blank password.
         isSamePassword = false;
         inputPasswordConfirmation = "";
         errorMessage = "The passwords does not matches!"
-        //call new fn from rust here
-      } else { isSamePassword = true }
+      } else {
+        isSamePassword = true;
+        try {
+          await invoke("create_first_password", { masterPass: inputPassword });
+          onSuccess();
+          } catch (error) {
+            console.error("Erreur renvoyée par Rust :", error);
+            errorMessage = "Rust error  : " + error;
+          }
+      }
     }
 
 </script>

@@ -7,13 +7,6 @@
     import LoginMenu from "./LoginMenu.svelte";
     import VaultMenu from "./VaultMenu.svelte";
 
-    const viewMap = {
-            [StateMenu.Loading]: LoadingMenu,
-            [StateMenu.Setup]: SetupMenu,
-            [StateMenu.Login]: LoginMenu,
-            [StateMenu.Vault]: VaultMenu
-        };
-
     let currentStateMenu = $state(StateMenu.Loading)
     onMount(async () => {
       try {
@@ -30,17 +23,19 @@
         console.error("Error connecting to rust:", err)
       }
     });
-    let ActiveComponent = $derived(viewMap[currentStateMenu]);
-
-
-
-    // let isConnected = $state(false)
-    // function toggleConnected(event: Event) {
-    //   event.preventDefault()
-    //   isConnected = !isConnected;
-
 
 </script>
 <div class="flex flex-col items-center">
-    <ActiveComponent />
+    {#if currentStateMenu === StateMenu.Loading}
+        <LoadingMenu />
+
+    {:else if currentStateMenu === StateMenu.Setup}
+        <SetupMenu onSuccess={() => currentStateMenu = StateMenu.Login} />
+
+    {:else if currentStateMenu === StateMenu.Login}
+        <LoginMenu />
+
+    {:else if currentStateMenu === StateMenu.Vault}
+        <VaultMenu />
+    {/if}
 </div>
