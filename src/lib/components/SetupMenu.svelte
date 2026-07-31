@@ -20,7 +20,7 @@
           await invoke("create_first_password", { masterPass: inputPassword });
           onSuccess();
           } catch (error) {
-            console.error("Erreur renvoyée par Rust :", error);
+            console.error("Rust error :", error);
             errorMessage = "Rust error  : " + error;
           }
       }

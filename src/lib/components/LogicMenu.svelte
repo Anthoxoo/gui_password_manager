@@ -10,6 +10,7 @@
     let currentStateMenu = $state(StateMenu.Loading)
     onMount(async () => {
       try {
+        await invoke("launch_program");
         let isFirstRegister = await invoke("is_first_launch");
 
         if (isFirstRegister) {
@@ -33,7 +34,7 @@
         <SetupMenu onSuccess={() => currentStateMenu = StateMenu.Login} />
 
     {:else if currentStateMenu === StateMenu.Login}
-        <LoginMenu />
+        <LoginMenu onSuccess={() => currentStateMenu = StateMenu.Vault}/>
 
     {:else if currentStateMenu === StateMenu.Vault}
         <VaultMenu />

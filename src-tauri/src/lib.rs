@@ -30,17 +30,18 @@ enum State {
     Unlocked,
 }
 
-fn launch_program() -> Option<PasswordManager> {
+#[tauri::command]
+fn launch_program(state: tauri::State<'_, Mutex<Option<PasswordManager>>>) -> Result<(), String> {
     let file_path = get_full_file_path("/.config/password-manager")
         .expect("Couldn't find the HOME env variable.");
 
     let _ = create_folder(&file_path);
 
     if let Ok(existing_manager) = PasswordManager::load(file_path) {
-        Some(existing_manager)
-    } else {
-        None
+        let mut manager = state.lock().unwrap();
+        *manager = Some(existing_manager)
     }
+    Ok(())
 }
 #[tauri::command]
 fn is_first_launch(state: tauri::State<'_, Mutex<Option<PasswordManager>>>) -> bool {
@@ -252,12 +253,13 @@ fn decrypt_password(password: String, key: MagicCrypt256) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let manager = launch_program();
+    let initial_state: Mutex<Option<PasswordManager>> = Mutex::new(None);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .manage(Mutex::new(manager))
+        .manage(initial_state)
         .invoke_handler(tauri::generate_handler![
+            launch_program,
             check_password,
             is_first_launch,
             create_first_password

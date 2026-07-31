@@ -1,3 +1,7 @@
+next time:
+  - Make login call backend to enter the vault
+  - vault page itself
+
 - Make a README
 - Add an MIT license
 - Remove the garbage tauri included such as icons in the src-tauri/icons
