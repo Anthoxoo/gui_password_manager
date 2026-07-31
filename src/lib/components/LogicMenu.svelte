@@ -37,6 +37,6 @@
         <LoginMenu onSuccess={() => currentStateMenu = StateMenu.Vault}/>
 
     {:else if currentStateMenu === StateMenu.Vault}
-        <VaultMenu />
+        <VaultMenu onDisconnect={() => currentStateMenu = StateMenu.Login}/>
     {/if}
 </div>

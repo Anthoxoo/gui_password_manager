@@ -88,6 +88,33 @@ fn check_password(
     }
 }
 
+#[tauri::command]
+fn password_to_vec(
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
+) -> Result<Vec<(String, String, String)>, String> {
+    let mut password_vec: Vec<(String, String, String)> = Vec::new();
+    let manager_guard = state.lock().unwrap();
+
+    if let Some(manager) = manager_guard.as_ref() {
+        let key = manager
+            .encryption_key
+            .as_ref()
+            .ok_or("Erreur : Cannot find the encryption key")?;
+
+        let mc = new_magic_crypt!(key, 256);
+
+        for (url, entry) in manager.password.iter() {
+            let decrypted_password = decrypt_password(entry.password.clone(), mc.clone());
+
+            password_vec.push((url.clone(), entry.username.clone(), decrypted_password));
+        }
+    } else {
+        return Err("Error : Vault is not open yet.".to_string());
+    }
+
+    Ok(password_vec)
+}
+
 impl PasswordManager {
     pub fn new(master_password: String) -> Self {
         PasswordManager {
@@ -262,7 +289,8 @@ pub fn run() {
             launch_program,
             check_password,
             is_first_launch,
-            create_first_password
+            create_first_password,
+            password_to_vec
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
