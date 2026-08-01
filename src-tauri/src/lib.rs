@@ -115,6 +115,31 @@ fn password_to_vec(
     Ok(password_vec)
 }
 
+#[tauri::command]
+fn add_password(
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
+    url: String,
+    username: String,
+    password: String,
+) -> Result<(), String> {
+    let mut manager_guard = state.lock().unwrap();
+
+    if let Some(manager) = manager_guard.as_mut() {
+        let key = manager.encryption_key.as_ref().unwrap();
+        let mc = new_magic_crypt!(key, 256);
+
+        let new_password = Password {
+            username,
+            password: encrypt_password(password, mc),
+        };
+
+        manager.password.insert(url, new_password);
+        Ok(())
+    } else {
+        Err("error if there is no manager open!".to_string())
+    }
+}
+
 impl PasswordManager {
     pub fn new(master_password: String) -> Self {
         PasswordManager {
@@ -170,9 +195,9 @@ impl PasswordManager {
         url: String,
         username: String,
         password: String,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), String> {
         if self.state == State::Locked {
-            Err("The manager is locked.")
+            Err("The manager is locked.".to_owned())
         } else {
             let key = self.encryption_key.as_ref().unwrap();
             let mc = new_magic_crypt!(key, 256);
@@ -290,7 +315,8 @@ pub fn run() {
             check_password,
             is_first_launch,
             create_first_password,
-            password_to_vec
+            password_to_vec,
+            add_password
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

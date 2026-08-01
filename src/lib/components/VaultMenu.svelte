@@ -3,16 +3,53 @@
     import { onMount } from "svelte";
 
     let { onDisconnect } = $props()
+
     let errorMessage = $state("")
-    let passwordsList: [String, String, String][] = $state([]);
-    onMount(async () => {
+    let passwordsList: [string, string, string][] = $state([]);
+    async function fetchPasswords() {
       try {
-        passwordsList = await invoke("password_to_vec");
+          passwordsList = await invoke("password_to_vec");
       } catch(err) {
-        console.error("error listing passwords", err)
-        errorMessage = "Error listing passwords : " + err
+        console.error("error listing passwords", err);
+        errorMessage = "Error listing passwords : " + err;
       }
+    }
+
+    onMount(async () => {
+      await fetchPasswords();
     })
+
+
+    let showAddPassword = $state(false);
+    function toggleAddPassword(event: Event) {
+      event.preventDefault();
+
+      showAddPassword = !showAddPassword;
+    }
+
+    let addUrlInput = $state("");
+    let addUsernameInput = $state("");
+    let addPasswordInput = $state("");
+
+    async function addPassword(event: Event) {
+      event.preventDefault();
+
+      try {
+        await invoke("add_password", { url: addUrlInput, username: addUsernameInput, password: addPasswordInput })
+        await fetchPasswords();
+
+        addUrlInput = "";
+        addUsernameInput = "";
+        addPasswordInput = "";
+        showAddPassword = false;
+        errorMessage = ""
+
+      } catch(err) {
+        console.error("Error adding new entry: ", err);
+        errorMessage = "Error creating new entry : " + err
+      }
+    }
+
 </script>
 
 <main>
@@ -25,9 +62,23 @@
         <p class="text-gray-500">Your vault is empty!.</p>
     {/if}
     <p>{errorMessage}</p>
+
+    <form class="row" onsubmit={toggleAddPassword}>
+        <button type="submit">Add an entry</button>
+    </form>
+
+    {#if showAddPassword}
+        <form class="row" onsubmit={addPassword}>
+            <input type="text" bind:value={addUrlInput} class="border p-2" placeholder="url"/>
+            <input type="text" bind:value={addUsernameInput} class="border p-2" placeholder="username"/>
+            <input type="password" bind:value={addPasswordInput} class="border p-2" placeholder="password"/>
+
+            <button type="submit">add</button>
+        </form>
+    {/if}
+
     <form class="row" onsubmit={onDisconnect}>
         <button type="submit">Lock your vault</button>
     </form>
-    <!-- <form class="row" onsubmit={}></form> -->
 
 </main>
