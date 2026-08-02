@@ -1,7 +1,5 @@
 next time:
   - vault page itself
-    - delete passwords,
-    - modify passwords,
     - not forget to save the config file in the background when doing one of those tasks
 
 - Make a README
@@ -18,3 +16,5 @@ WHEN FINISHED
 - forcing user to create a more robust password
 - sort passwords in vault
 - improve UI ? (always duable)
+- error messages disapears after few seconds (gotta remove where we reset errorMessage in vaultMenu)
+- make a ? near the buttons if it needs some explainations such as modify by url or delete by url too.

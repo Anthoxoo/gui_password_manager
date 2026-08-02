@@ -49,12 +49,12 @@
       }
     }
 
-    let removeEntryUrl = $state("");
+    let removeEntryUrlInput = $state("");
     async function deleteEntry(event: Event) {
       event.preventDefault();
 
       try {
-        await invoke("delete_entry", { url: removeEntryUrl })
+        await invoke("delete_entry", { url: removeEntryUrlInput })
         await fetchPasswords();
       } catch(err) {
         console.error(err)
@@ -67,6 +67,29 @@
       event.preventDefault();
       errorMessage = "";
       showRemoveEntry = !showRemoveEntry;
+    }
+
+    let modifyUrlInput = $state("");
+    let modifyUsernameInput = $state("");
+    let modifyPassowrdInput = $state("");
+
+    async function modifyEntry(event: Event) {
+      event.preventDefault();
+
+      try {
+        await invoke("modify_entry", { url: modifyUrlInput, username: modifyUsernameInput, newPassword: modifyPassowrdInput })
+        await fetchPasswords();
+      } catch(err) {
+        console.error(err);
+        errorMessage = "Error: " + err;
+      }
+    }
+
+    let showModifyEntry = $state(false)
+    function toggleModifyEntry(event: Event) {
+      event.preventDefault();
+      errorMessage = "";
+      showModifyEntry = !showModifyEntry;
     }
 
 </script>
@@ -90,7 +113,7 @@
         <form class="row" onsubmit={addPassword}>
             <input type="text" bind:value={addUrlInput} class="border p-2" placeholder="url"/>
             <input type="text" bind:value={addUsernameInput} class="border p-2" placeholder="username"/>
-            <input type="password" bind:value={addPasswordInput} class="border p-2" placeholder="password"/>
+            <input type="text" bind:value={addPasswordInput} class="border p-2" placeholder="password"/>
 
             <button type="submit">add</button>
         </form>
@@ -102,7 +125,22 @@
 
     {#if showRemoveEntry}
         <form class="row" onsubmit={deleteEntry}>
-            <input type="text" bind:value={removeEntryUrl} class="border p-2" placeholder="url" />
+            <input type="text" bind:value={removeEntryUrlInput} class="border p-2" placeholder="url" />
+        </form>
+    {/if}
+
+    <form class="row" onsubmit={toggleModifyEntry}>
+        <button type="submit">Modify an entry</button>
+    </form>
+
+    {#if showModifyEntry}
+        <form class="row" onsubmit={modifyEntry}>
+            <input type="text" bind:value={modifyUrlInput} class="border p-2" placeholder="url" />
+            <br/>
+            <input type="text" bind:value={modifyUsernameInput} class="border p-2" placeholder="username" />
+            <input type="text" bind:value={modifyPassowrdInput} class="border p-2" placeholder="password" />
+
+            <button type="submit">add</button>
         </form>
     {/if}
 

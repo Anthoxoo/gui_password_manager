@@ -157,6 +157,33 @@ fn delete_entry(
         Err("Could not acces the manager".to_string())
     }
 }
+
+#[tauri::command]
+fn modify_entry(
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
+    url: String,
+    username: String,
+    new_password: String,
+) -> Result<(), String> {
+    let mut manager_guard = state.lock().unwrap();
+
+    if let Some(manager) = manager_guard.as_mut() {
+        if let Some(entry) = manager.password.get_mut(&url) {
+            let key = manager.encryption_key.as_ref().unwrap();
+            let mc = new_magic_crypt!(key, 256);
+
+            entry.username = username;
+            entry.password = encrypt_password(new_password, mc);
+
+            Ok(())
+        } else {
+            Err("Url not found.".to_string())
+        }
+    } else {
+        Err("Couldn't acces manager".to_string())
+    }
+}
+
 impl PasswordManager {
     pub fn new(master_password: String) -> Self {
         PasswordManager {
@@ -334,7 +361,8 @@ pub fn run() {
             create_first_password,
             password_to_vec,
             add_password,
-            delete_entry
+            delete_entry,
+            modify_entry
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
