@@ -4,7 +4,7 @@
 
     let { onDisconnect } = $props()
 
-    let errorMessage = $state("")
+    let errorMessage = $state("");
     let passwordsList: [string, string, string][] = $state([]);
     async function fetchPasswords() {
       try {
@@ -23,7 +23,7 @@
     let showAddPassword = $state(false);
     function toggleAddPassword(event: Event) {
       event.preventDefault();
-
+      errorMessage = "";
       showAddPassword = !showAddPassword;
     }
 
@@ -42,12 +42,31 @@
         addUsernameInput = "";
         addPasswordInput = "";
         showAddPassword = false;
-        errorMessage = ""
 
       } catch(err) {
         console.error("Error adding new entry: ", err);
         errorMessage = "Error creating new entry : " + err
       }
+    }
+
+    let removeEntryUrl = $state("");
+    async function deleteEntry(event: Event) {
+      event.preventDefault();
+
+      try {
+        await invoke("delete_entry", { url: removeEntryUrl })
+        await fetchPasswords();
+      } catch(err) {
+        console.error(err)
+        errorMessage = "Error: " + err
+      }
+    }
+
+    let showRemoveEntry = $state(false);
+    function toggleRemoveEntry(event: Event) {
+      event.preventDefault();
+      errorMessage = "";
+      showRemoveEntry = !showRemoveEntry;
     }
 
 </script>
@@ -59,7 +78,7 @@
     {/each}
 
     {#if passwordsList.length === 0}
-        <p class="text-gray-500">Your vault is empty!.</p>
+        <p class="text-gray-500">Your vault is empty!</p>
     {/if}
     <p>{errorMessage}</p>
 
@@ -74,6 +93,16 @@
             <input type="password" bind:value={addPasswordInput} class="border p-2" placeholder="password"/>
 
             <button type="submit">add</button>
+        </form>
+    {/if}
+
+    <form class="row" onsubmit={toggleRemoveEntry}>
+        <button type="submit">Remove an entry</button>
+    </form>
+
+    {#if showRemoveEntry}
+        <form class="row" onsubmit={deleteEntry}>
+            <input type="text" bind:value={removeEntryUrl} class="border p-2" placeholder="url" />
         </form>
     {/if}
 

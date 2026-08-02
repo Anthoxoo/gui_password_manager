@@ -140,6 +140,23 @@ fn add_password(
     }
 }
 
+#[tauri::command]
+fn delete_entry(
+    state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
+    url: String,
+) -> Result<(), String> {
+    let mut manager_guard = state.lock().unwrap();
+
+    if let Some(manager) = manager_guard.as_mut() {
+        if manager.password.remove(&url).is_some() {
+            Ok(())
+        } else {
+            return Err("Url not found.".to_string());
+        }
+    } else {
+        Err("Could not acces the manager".to_string())
+    }
+}
 impl PasswordManager {
     pub fn new(master_password: String) -> Self {
         PasswordManager {
@@ -316,7 +333,8 @@ pub fn run() {
             is_first_launch,
             create_first_password,
             password_to_vec,
-            add_password
+            add_password,
+            delete_entry
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
