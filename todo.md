@@ -1,11 +1,7 @@
-next time:
-  - vault page itself
-    - not forget to save the config file in the background when doing one of those tasks
-
 - Make a README
 - Add an MIT license
 - Remove the garbage tauri included such as icons in the src-tauri/icons
-
+- cleanup all the useless functions
 
 
 WHEN FINISHED

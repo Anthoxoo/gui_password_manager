@@ -140,7 +140,7 @@
             <input type="text" bind:value={modifyUsernameInput} class="border p-2" placeholder="username" />
             <input type="text" bind:value={modifyPassowrdInput} class="border p-2" placeholder="password" />
 
-            <button type="submit">add</button>
+            <button type="submit">modify</button>
         </form>
     {/if}
 

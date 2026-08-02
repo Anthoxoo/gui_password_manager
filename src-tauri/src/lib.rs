@@ -33,7 +33,7 @@ enum State {
 #[tauri::command]
 fn launch_program(state: tauri::State<'_, Mutex<Option<PasswordManager>>>) -> Result<(), String> {
     let file_path = get_full_file_path("/.config/password-manager")
-        .expect("Couldn't find the HOME env variable.");
+        .map_err(|err| format!("Couldn't find the HOME env variable : {err}"))?;
 
     let _ = create_folder(&file_path);
 
@@ -125,7 +125,10 @@ fn add_password(
     let mut manager_guard = state.lock().unwrap();
 
     if let Some(manager) = manager_guard.as_mut() {
-        let key = manager.encryption_key.as_ref().unwrap();
+        let key = manager
+            .encryption_key
+            .as_ref()
+            .ok_or("Error : couldn't find the encryption key.")?;
         let mc = new_magic_crypt!(key, 256);
 
         let new_password = Password {
@@ -134,12 +137,17 @@ fn add_password(
         };
 
         manager.password.insert(url, new_password);
+
+        let file_path = get_full_file_path("/.config/password-manager")
+            .map_err(|err| format!("Couldn't find the HOME env variable : {err}"))?;
+
+        manager.save_config_file(file_path)?;
+
         Ok(())
     } else {
-        Err("error if there is no manager open!".to_string())
+        Err("Error: the vault cannot be modified yet. (maybe an other process is already accessing it)".to_string())
     }
 }
-
 #[tauri::command]
 fn delete_entry(
     state: tauri::State<'_, Mutex<Option<PasswordManager>>>,
@@ -149,6 +157,12 @@ fn delete_entry(
 
     if let Some(manager) = manager_guard.as_mut() {
         if manager.password.remove(&url).is_some() {
+            let file_path = get_full_file_path("/.config/password-manager")
+                .map_err(|err| format!("Couldn't find the HOME env variable : {err}"))?;
+            manager
+                .save_config_file(file_path)
+                .map_err(|err| format!("Couldn't save the config file : {err}"))?;
+
             Ok(())
         } else {
             return Err("Url not found.".to_string());
@@ -169,11 +183,20 @@ fn modify_entry(
 
     if let Some(manager) = manager_guard.as_mut() {
         if let Some(entry) = manager.password.get_mut(&url) {
-            let key = manager.encryption_key.as_ref().unwrap();
+            let key = manager
+                .encryption_key
+                .as_ref()
+                .ok_or("Error : couldn't find the encryption key.")?;
             let mc = new_magic_crypt!(key, 256);
 
             entry.username = username;
             entry.password = encrypt_password(new_password, mc);
+
+            let file_path = get_full_file_path("/.config/password-manager")
+                .map_err(|err| format!("Couldn't find the HOME env variable : {err}"))?;
+            manager
+                .save_config_file(file_path)
+                .map_err(|err| format!("Couldn't save the config file : {err}"))?;
 
             Ok(())
         } else {
@@ -201,7 +224,6 @@ impl PasswordManager {
             // File exists
             if let Ok(mut manager) = serde_json::from_str::<PasswordManager>(&json_data) {
                 // We managed to read it properly
-                manager.state = State::Locked;
                 manager.encryption_key = None;
                 // no need for the master pass and the passwords because serde did it for us by serialize it from the json file.
                 return Ok(manager);
@@ -308,18 +330,16 @@ impl PasswordManager {
         Ok(())
     }
 
-    fn save_config_file(&self, path: String) -> Result<(), &'static str> {
-        if self.state == State::Unlocked {
-            Err("The manager is unlocked, you must lock it before saving the file.")
-        } else {
-            let new_config_path = format!("{}/passwords.json", path);
-            let json_data =
-                serde_json::to_string_pretty(self).expect("Error serializing to the json format.");
+    fn save_config_file(&self, path: String) -> Result<(), String> {
+        let new_config_path = format!("{}/passwords.json", path);
 
-            fs::write(new_config_path, json_data)
-                .expect("Error trying to save the file on the disk.");
-            Ok(())
-        }
+        let json_data = serde_json::to_string_pretty(self)
+            .map_err(|e| format!("Error serializing to json: {}", e))?;
+
+        std::fs::write(new_config_path, json_data)
+            .map_err(|e| format!("Error saving the file to disk: {}", e))?;
+
+        Ok(())
     }
 }
 
