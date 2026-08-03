@@ -56,6 +56,10 @@
       try {
         await invoke("delete_entry", { url: removeEntryUrlInput })
         await fetchPasswords();
+
+        removeEntryUrlInput = "";
+        showRemoveEntry = false;
+
       } catch(err) {
         console.error(err)
         errorMessage = "Error: " + err
@@ -79,6 +83,12 @@
       try {
         await invoke("modify_entry", { url: modifyUrlInput, username: modifyUsernameInput, newPassword: modifyPassowrdInput })
         await fetchPasswords();
+
+        modifyPassowrdInput = "";
+        modifyUsernameInput = "";
+        modifyUrlInput = "";
+        showModifyEntry = false;
+
       } catch(err) {
         console.error(err);
         errorMessage = "Error: " + err;
