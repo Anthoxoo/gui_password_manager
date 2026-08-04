@@ -2,7 +2,6 @@ TODO:
 - make icon and visuals for the app
 - search bar for vault menu
 - App crashes if spamming login ( put 1/1.5s delay )
-- show password VaultMenu add password / modify
 - Import / Export option
 - forcing user to create a more robust password
 - sort passwords in vault

@@ -27,6 +27,17 @@
       showAddPassword = !showAddPassword;
     }
 
+    let showHiddenAddPassword = $state(false);
+    let showHiddenModifyPassword = $state(false);
+    function toggleShowAddPassword(event: Event) {
+      event.preventDefault();
+      showHiddenAddPassword = ! showHiddenAddPassword;
+    }
+    function toggleShowModifyPassword(event: Event) {
+      event.preventDefault();
+      showHiddenAddPassword = ! showHiddenAddPassword;
+    }
+
     let addUrlInput = $state("");
     let addUsernameInput = $state("");
     let addPasswordInput = $state("");
@@ -123,8 +134,14 @@
         <form class="row" onsubmit={addPassword}>
             <input type="text" bind:value={addUrlInput} class="border p-2" placeholder="url"/>
             <input type="text" bind:value={addUsernameInput} class="border p-2" placeholder="username"/>
-            <input type="text" bind:value={addPasswordInput} class="border p-2" placeholder="password"/>
+            {#if showHiddenAddPassword === false}
+                <input type="password" bind:value={addPasswordInput} class="border p-2" placeholder="password" />
+            {:else}
+                <input type="text" bind:value={addPasswordInput} class="border p-2" placeholder="password" />
+            {/if}
+            <input type="checkbox" onclick={toggleShowAddPassword}>Show Password
 
+            <br/>
             <button type="submit">add</button>
         </form>
     {/if}
@@ -148,9 +165,15 @@
             <input type="text" bind:value={modifyUrlInput} class="border p-2" placeholder="url" />
             <br/>
             <input type="text" bind:value={modifyUsernameInput} class="border p-2" placeholder="username" />
-            <input type="text" bind:value={modifyPassowrdInput} class="border p-2" placeholder="password" />
-
+            {#if showHiddenModifyPassword === false}
+                <input type="password" bind:value={modifyPassowrdInput} class="border p-2" placeholder="password" />
+            {:else}
+                <input type="text" bind:value={modifyPassowrdInput} class="border p-2" placeholder="password" />
+            {/if}
             <button type="submit">modify</button>
+
+            <br/>
+            <input type="checkbox" onclick={toggleShowModifyPassword}>Show Password
         </form>
     {/if}
 
