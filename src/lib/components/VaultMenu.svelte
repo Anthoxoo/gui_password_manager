@@ -4,6 +4,8 @@
 
     let { onDisconnect } = $props()
 
+    let filterValue = $state("");
+
     let errorMessage = $state("");
     let passwordsList: [string, string, string][] = $state([]);
     async function fetchPasswords() {
@@ -14,6 +16,10 @@
         errorMessage = "Error listing passwords : " + err;
       }
     }
+
+    let filteredPasswordList = $derived(passwordsList.filter(([url, usernae, password]) => {
+      return url.toLowerCase().includes(filterValue.toLowerCase());
+    }));
 
     onMount(async () => {
       await fetchPasswords();
@@ -117,7 +123,9 @@
 
 <main>
     <h2>Welcome back in your vault !</h2>
-    {#each passwordsList as [url, username, password]}
+    <input type="search" placeholder="Search an url" bind:value={filterValue} />
+
+    {#each filteredPasswordList as [url, username, password]}
         <p><strong>url: </strong> {url} | <strong> username: </strong> {username} | <strong> password: </strong> {password} </p>
     {/each}
 
@@ -125,6 +133,10 @@
         <p class="text-gray-500">Your vault is empty!</p>
     {/if}
     <p>{errorMessage}</p>
+
+    {#if filteredPasswordList.length === 0 && passwordsList.length != 0}
+        <p>Nothing like "{filterValue}" is present in the vault</p>
+    {/if}
 
     <form class="row" onsubmit={toggleAddPassword}>
         <button type="submit">Add an entry</button>
@@ -176,6 +188,7 @@
             <input type="checkbox" onclick={toggleShowModifyPassword}>Show Password
         </form>
     {/if}
+
 
     <form class="row" onsubmit={onDisconnect}>
         <button type="submit">Lock your vault</button>
