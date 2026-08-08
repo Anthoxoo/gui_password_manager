@@ -119,6 +119,20 @@
       showModifyEntry = !showModifyEntry;
     }
 
+    let copyMessage = $state("");
+    async function copyToClipboard(textToCopy: string) {
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+
+        copyMessage = "Field copied.";
+
+        setTimeout(() => {
+          copyMessage = "";
+        }, 1500);
+      } catch(err) {
+        console.error("Error copying : " + err);
+      }
+    }
 </script>
 
 <main>
@@ -126,12 +140,16 @@
     <input type="search" placeholder="Search an url" bind:value={filterValue} />
 
     {#each filteredPasswordList as [url, username, password]}
-        <p><strong>url: </strong> {url} | <strong> username: </strong> {username} | <strong> password: </strong> {password} </p>
+        <br/>
+        <strong>url: </strong> {url} |
+        <strong> username: </strong> <span class="password-clickable" onclick={() => copyToClipboard(username)}> {username} </span> |
+        <strong>Password: </strong> <span class="password-clickable" onclick={() => copyToClipboard(password)}> {password} </span>
     {/each}
 
     {#if passwordsList.length === 0}
         <p class="text-gray-500">Your vault is empty!</p>
     {/if}
+    <p>{copyMessage}</p>
     <p>{errorMessage}</p>
 
     {#if filteredPasswordList.length === 0 && passwordsList.length != 0}
@@ -195,3 +213,9 @@
     </form>
 
 </main>
+
+<style>
+    .password-clickable:hover {
+        text-decoration: underline;
+    }
+</style>
