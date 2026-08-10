@@ -12,17 +12,26 @@
     async function passwordCheck(event: Event) {
       event.preventDefault();
 
-      try {
-        let isPasswordCorrect = await invoke("check_password", { masterPass: inputPassword });
+      if (inputPassword == "") {
+        errorMessage = "Password cannot be blank!" // we cant have a blank password anyways and it'll help with the spamming passwords to crash the app.
+      } else {
+        try {
+          let isPasswordCorrect = await invoke("check_password", { masterPass: inputPassword });
 
-        if (isPasswordCorrect) {
-        onSuccess();
-        } else {
-          errorMessage = "Incorrect password!"
+          if (isPasswordCorrect) {
+          onSuccess();
+          } else {
+            errorMessage = "Incorrect password!";
+
+            setTimeout(() => {}, 1250);
+
+          }
+        } catch(err) {
+          errorMessage = "Error checking passwords : " + err;
         }
-      } catch(err) {
-        errorMessage = "Error checking passwords : " + err;
       }
+
+      inputPassword = "";
 
       setTimeout(() => {
         errorMessage = "";
