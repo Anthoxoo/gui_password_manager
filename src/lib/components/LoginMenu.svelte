@@ -23,6 +23,11 @@
       } catch(err) {
         errorMessage = "Error checking passwords : " + err;
       }
+
+      setTimeout(() => {
+        errorMessage = "";
+      }, 1500);
+
     }
 
 

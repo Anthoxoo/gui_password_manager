@@ -9,8 +9,10 @@
 
     async function checkSamePassword(event: Event) {
       event.preventDefault();
-
-      if (inputPassword != inputPasswordConfirmation || inputPassword == "") { // inputedPassword = "" so the user cant input a blank password.
+      if (inputPassword == "") {
+        errorMessage = "You cannot have a blank master password!"
+      }
+      else if (inputPassword != inputPasswordConfirmation) { // inputedPassword = "" so the user cant input a blank password.
         isSamePassword = false;
         inputPasswordConfirmation = "";
         errorMessage = "The passwords does not matches!"
@@ -24,6 +26,11 @@
             errorMessage = "Rust error  : " + error;
           }
       }
+
+      setTimeout(() => {
+        errorMessage = "";
+      }, 1500);
+
     }
 
 </script>
@@ -38,11 +45,6 @@
 
         <button type="submit" class="bg-blue-500 text-white p-2 mt-2 rounded">Register</button>
 
-        {#if isSamePassword}
-            <h3>call new function from backend and go on login page</h3>
-
-        {:else if errorMessage != ""}
-            <h3>{errorMessage}</h3>
-        {/if}
+        <h3>{errorMessage}</h3>
     </form>
 </main>

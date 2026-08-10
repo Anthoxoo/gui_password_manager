@@ -5,8 +5,8 @@
     let { onDisconnect } = $props()
 
     let filterValue = $state("");
-
     let errorMessage = $state("");
+
     let passwordsList: [string, string, string][] = $state([]);
     async function fetchPasswords() {
       try {
@@ -29,7 +29,6 @@
     let showAddPassword = $state(false);
     function toggleAddPassword(event: Event) {
       event.preventDefault();
-      errorMessage = "";
       showAddPassword = !showAddPassword;
     }
 
@@ -86,7 +85,6 @@
     let showRemoveEntry = $state(false);
     function toggleRemoveEntry(event: Event) {
       event.preventDefault();
-      errorMessage = "";
       showRemoveEntry = !showRemoveEntry;
     }
 
@@ -115,7 +113,6 @@
     let showModifyEntry = $state(false)
     function toggleModifyEntry(event: Event) {
       event.preventDefault();
-      errorMessage = "";
       showModifyEntry = !showModifyEntry;
     }
 
@@ -126,12 +123,14 @@
 
         copyMessage = "Field copied.";
 
-        setTimeout(() => {
-          copyMessage = "";
-        }, 1500);
       } catch(err) {
         console.error("Error copying : " + err);
       }
+
+      setTimeout(() => {
+        copyMessage = "";
+      }, 1500);
+
     }
 </script>
 

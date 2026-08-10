@@ -1,5 +1,4 @@
 # TODO:
-  - error messages disapears after few seconds (gotta remove where we reset errorMessage in vaultMenu)
   - make icon and visuals for the app
   - App crashes if spamming login ( put 1/1.5s delay )
   
