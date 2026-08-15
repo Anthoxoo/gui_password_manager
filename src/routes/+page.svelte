@@ -1,9 +1,57 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { openUrl } from '@tauri-apps/plugin-opener';
   import MenuLogic from "$lib/components/LogicMenu.svelte";
+
+  function passwordExport() {
+    console.log("export");
+  }
+
+  function passwordImport() {
+    console.log("import");
+  }
+
+  function handleToolbarFile(event: Event) {
+    const select = event.target as HTMLSelectElement; // <option value> itself
+    const action = select.value; // Import or Export
+
+    if (action=="import") {
+      passwordImport();
+    } else if (action=="export") {
+      passwordExport();
+    }
+
+    select.value = "File";
+  }
+
+  function handleToolbarHelp(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const action = select.value;
+
+    if (action == "github") {
+      openUrl("https://github.com/Anthoxoo/gui_password_manager.git");
+    }
+
+    select.value = "";
+
+  }
+
 </script>
 
 <main class="container">
+    <div class="toolbar">
+        <select onchange={handleToolbarFile}>
+            <option value="">File</option>
+            <option value="import">Import</option>
+            <option value="export">Export</option>
+
+        </select>
+        <select onchange={handleToolbarHelp}>
+            <option value="">Help</option>
+            <option value="github">Github</option>
+        </select>
+    </div>
+
     <h1>Hello and welcome on my future password manager!</h1>
 
     <MenuLogic />
@@ -28,7 +76,6 @@
 
 .container {
   margin: 0;
-  padding-top: 10vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,6 +86,14 @@ h1 {
   text-align: center;
 }
 
+.toolbar {
+    text-align: left;
+    display: fixed;
+    top: 0;
+    left: 0;
+
+    color: #4b4f57;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
