@@ -6,6 +6,9 @@ use std::env;
 use std::fs;
 use std::sync::Mutex;
 
+const FOLDER_PATH: &str = "/.config/password-manager";
+const FILE_PATH: &str = "passwords.json";
+
 #[derive(Serialize, Deserialize)]
 pub struct PasswordManager {
     master_password: String,
@@ -247,6 +250,19 @@ fn modify_entry(
     }
 }
 
+#[tauri::command]
+fn export_password(destination_path: String) -> Result<(), String> {
+    let config_folder_path = get_full_file_path(FOLDER_PATH)
+        .map_err(|err| format!("Couldn't get the config folder path: {err}"))?;
+
+    let config_file_path = format!("{}/{}", config_folder_path, FILE_PATH);
+    println!("{}", config_file_path);
+    match fs::copy(config_file_path, destination_path) {
+        Err(e) => Err(format!("Error finding the config file or copying it. {e}")),
+        Ok(_) => Ok(()),
+    }
+}
+
 fn get_full_file_path(relative_path: &str) -> Result<String, &'static str> {
     if let Ok(home) = env::var("HOME") {
         Ok(format!("{}{}", home, relative_path))
@@ -276,6 +292,7 @@ pub fn run() {
     let initial_state: Mutex<Option<PasswordManager>> = Mutex::new(None);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(initial_state)
         .invoke_handler(tauri::generate_handler![
@@ -286,7 +303,8 @@ pub fn run() {
             password_to_vec,
             add_password,
             delete_entry,
-            modify_entry
+            modify_entry,
+            export_password
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

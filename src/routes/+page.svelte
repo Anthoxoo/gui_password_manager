@@ -1,24 +1,39 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { openUrl } from '@tauri-apps/plugin-opener';
+  import { save } from "@tauri-apps/plugin-dialog";
   import MenuLogic from "$lib/components/LogicMenu.svelte";
 
-  function passwordExport() {
-    console.log("export");
+  async function passwordExport() {
+    try {
+      const filePath = await save({
+        title: 'Export your vault',
+        defaultPath: 'passwords.json',
+        filters: [{
+          name: 'JSON',
+          extensions: ['json']
+          }]
+        });
+
+      await invoke("export_password", { destinationPath: filePath });
+    } catch(err) {
+      console.error("Couldn't export the passwords" + err);
+    }
   }
 
   function passwordImport() {
     console.log("import");
   }
 
-  function handleToolbarFile(event: Event) {
+  async function handleToolbarFile(event: Event) {
     const select = event.target as HTMLSelectElement; // <option value> itself
-    const action = select.value; // Import or Export
+    const action: string = select.value; // Import or Export
 
-    if (action=="import") {
-      passwordImport();
-    } else if (action=="export") {
-      passwordExport();
+    switch(action) {
+      case "import":
+        passwordImport();
+      case "export":
+        passwordExport();
     }
 
     select.value = "File";
