@@ -140,7 +140,7 @@
 
     {#each filteredPasswordList as [url, username, password]}
         <br/>
-        <strong>url: </strong> {url} |
+        <strong> url: </strong> <span class="password-clickable" onclick={() => copyToClipboard(url)}> {url} </span> |
         <strong> username: </strong> <span class="password-clickable" onclick={() => copyToClipboard(username)}> {username} </span> |
         <strong>Password: </strong> <span class="password-clickable" onclick={() => copyToClipboard(password)}> {password} </span>
     {/each}
