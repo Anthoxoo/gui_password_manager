@@ -263,6 +263,26 @@ fn export_password(destination_path: String) -> Result<(), String> {
     }
 }
 
+#[tauri::command]
+fn import_password(
+    state: tauri::State<'_, std::sync::Mutex<Option<PasswordManager>>>,
+    from_path: String,
+) -> Result<(), String> {
+    let config_folder_path = get_full_file_path(FOLDER_PATH)
+        .map_err(|err| format!("Couldn't get the config folder path: {err}"))?;
+
+    let config_file_path = format!("{}/{}", config_folder_path, FILE_PATH);
+
+    match fs::copy(from_path, config_file_path) {
+        Err(e) => Err(format!("Error finding the config file or copying it {e}")),
+        Ok(_) => {
+            let mut manager_guard = state.lock().unwrap();
+            *manager_guard = None; // .lock the manager so the old passwords that are still in ram get cleared
+            Ok(())
+        }
+    }
+}
+
 fn get_full_file_path(relative_path: &str) -> Result<String, &'static str> {
     if let Ok(home) = env::var("HOME") {
         Ok(format!("{}{}", home, relative_path))
@@ -304,7 +324,8 @@ pub fn run() {
             add_password,
             delete_entry,
             modify_entry,
-            export_password
+            export_password,
+            import_password
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

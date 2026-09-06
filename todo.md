@@ -1,8 +1,6 @@
 # TODO:
   - make icon and visuals for the app
 
-  - Toolbar:
-    - Import backend.
   - Make a new screen appearing when adding a password / modify / deleting.
     - look for https://v2.tauri.app/learn/window-menu/
   - forcing user to create a more robust password

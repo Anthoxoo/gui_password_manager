@@ -1,7 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { openUrl } from '@tauri-apps/plugin-opener';
-  import { save } from "@tauri-apps/plugin-dialog";
+  import { save, open } from "@tauri-apps/plugin-dialog";
   import MenuLogic from "$lib/components/LogicMenu.svelte";
 
   async function passwordExport() {
@@ -21,8 +21,20 @@
     }
   }
 
-  function passwordImport() {
-    console.log("import");
+  async function passwordImport() {
+    try {
+      const file = await open({
+        multiple: false,
+        directory: false,
+      });
+
+      await invoke("import_password", {  fromPath: file });
+
+      window.location.reload(); // reload the page so we get back to the login page.
+    }
+    catch(err) {
+      console.error("Couldn't import the password" + err);
+    }
   }
 
   async function handleToolbarFile(event: Event) {
@@ -32,11 +44,13 @@
     switch(action) {
       case "import":
         passwordImport();
+        break;
       case "export":
         passwordExport();
+        break;
     }
 
-    select.value = "File";
+    select.value = "";
   }
 
   function handleToolbarHelp(event: Event) {
