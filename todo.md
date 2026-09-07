@@ -8,5 +8,6 @@
   - add shortcuts to copy fields.
   - make errors floating
   - propose strong passwords
+  - Add a system tray system
   
   - improve UI ? (always duable)
