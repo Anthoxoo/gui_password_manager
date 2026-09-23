@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::sync::Mutex;
+use tauri::tray::TrayIconBuilder;
 
 const FOLDER_PATH: &str = "/.config/password-manager";
 const FILE_PATH: &str = "passwords.json";
@@ -312,6 +313,12 @@ pub fn run() {
     let initial_state: Mutex<Option<PasswordManager>> = Mutex::new(None);
 
     tauri::Builder::default()
+        .setup(|app| {
+            let tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .build(app)?;
+            Ok(())
+        })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(initial_state)
