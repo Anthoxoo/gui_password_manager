@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::sync::Mutex;
+use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 
 const FOLDER_PATH: &str = "/.config/password-manager";
@@ -314,8 +315,20 @@ pub fn run() {
 
     tauri::Builder::default()
         .setup(|app| {
-            let tray = TrayIconBuilder::new()
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_i])?;
+            let _tray = TrayIconBuilder::new()
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        println!("Closing window from tray.");
+                        app.exit(0);
+                    }
+
+                    _ => println!("Tray event not handled."),
+                })
+                .menu(&menu)
                 .icon(app.default_window_icon().unwrap().clone())
+                .show_menu_on_left_click(true)
                 .build(app)?;
             Ok(())
         })

@@ -8,7 +8,7 @@
   - add shortcuts to copy fields.
   - make errors floating
   - propose strong passwords
-  - Add a system tray system
-    - https://v2.tauri.app/learn/system-tray/
-  
+  - tray system :
+    - go to vault
+    - lock the vault
   - improve UI ? (always duable)
